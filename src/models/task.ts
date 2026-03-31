@@ -14,7 +14,7 @@ export const mkTask = (name = "New Task", points = 0): Task => ({
 });
 
 export function trackChange(task: Task, field: string, newVal: unknown): Task {
-  const oldVal = (task as Record<string, unknown>)[field];
+  const oldVal = (task as unknown as Record<string, unknown>)[field];
   if (field === "tags") {
     if (JSON.stringify(oldVal) === JSON.stringify(newVal)) return { ...task, [field]: newVal } as Task;
   } else {
