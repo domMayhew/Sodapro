@@ -1,4 +1,4 @@
-import type { Task, Points, ChangeLogEntry } from '../types';
+import type { Task, Points, ChangeLogEntry, TimeEntry } from '../types';
 import { STATUSES } from '../constants';
 
 let _id = 100;
@@ -25,7 +25,42 @@ export function trackChange(task: Task, field: string, newVal: unknown): Task {
 }
 
 export function withStatusChange(task: Task, newStatus: string): Task {
-  return trackChange(task, "status", newStatus);
+  const updated = trackChange(task, "status", newStatus);
+  return isTimerRunning(updated) ? stopTimer(updated) : updated;
+}
+
+export function getTrackedMinutes(task: Task, phase?: 'work' | 'review'): number {
+  return (task.timeEntries || [])
+    .filter(e => phase == null || e.phase === phase)
+    .reduce((sum, e) => {
+      const ms = (e.stoppedAt ? new Date(e.stoppedAt).getTime() : Date.now()) - new Date(e.startedAt).getTime();
+      return sum + Math.floor(ms / 60000);
+    }, 0);
+}
+
+export function formatTrackedTime(mins: number): string {
+  if (mins < 60) return `${mins}m`;
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
+export function isTimerRunning(task: Task): boolean {
+  return (task.timeEntries || []).some(e => !e.stoppedAt);
+}
+
+export function activeTimerPhase(task: Task): 'work' | 'review' | null {
+  return (task.timeEntries || []).find(e => !e.stoppedAt)?.phase ?? null;
+}
+
+export function startTimer(task: Task, phase: 'work' | 'review'): Task {
+  const stopped = (task.timeEntries || []).map(e => e.stoppedAt ? e : { ...e, stoppedAt: new Date().toISOString() });
+  const entry: TimeEntry = { phase, startedAt: new Date().toISOString() };
+  return { ...task, timeEntries: [...stopped, entry] };
+}
+
+export function stopTimer(task: Task): Task {
+  const now = new Date().toISOString();
+  return { ...task, timeEntries: (task.timeEntries || []).map(e => e.stoppedAt ? e : { ...e, stoppedAt: now }) };
 }
 
 export function computePts(task: Task, ratio: number[], includeArchived = false): Points {

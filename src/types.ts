@@ -1,3 +1,9 @@
+export interface TimeEntry {
+  phase: 'work' | 'review';
+  startedAt: string;
+  stoppedAt?: string;
+}
+
 export interface Task {
   id: string;
   name: string;
@@ -10,6 +16,7 @@ export interface Task {
   status: string;
   changeLog: ChangeLogEntry[];
   archived: boolean;
+  timeEntries?: TimeEntry[];
   _isRoot?: boolean;
   // Added by Kanban/Timeline views
   _projectId?: string;
