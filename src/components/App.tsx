@@ -13,12 +13,14 @@ import { TimelineView } from './TimelineView';
 import { KanbanView } from './KanbanView';
 import { ProjectsView } from './ProjectsView';
 import { GoalsView, ProjectGoalDetail, SetGoalModal } from './GoalsView';
+import { DailyJournalView } from './DailyJournalView';
 
 const TEAM_VIEWS = [
   { id: "projects", label: "Projects", icon: "⊡" },
   { id: "kanban",   label: "Kanban",   icon: "⊞" },
   { id: "timeline", label: "Timeline", icon: "▬" },
   { id: "goals",    label: "Goals",    icon: "◎" },
+  { id: "journal",  label: "Journal",  icon: "✏" },
 ] as const;
 
 type TeamViewId = typeof TEAM_VIEWS[number]["id"];
@@ -274,6 +276,9 @@ export default function App() {
                 ) : (
                   <GoalsView team={selectedTeam} onDeleteSnapshot={handleDeleteSnapshot} onSelectProjectGoal={handleSelectProjectGoal} onCloseSnapshot={handleCloseSnapshot} />
                 )
+              )}
+              {teamView === "journal" && (
+                <DailyJournalView team={selectedTeam} onUpdateTeam={fn => updateTeam(selectedTeamId, fn)} />
               )}
             </>
           )}
