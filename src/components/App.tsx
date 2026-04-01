@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { C } from '../constants/colors';
-import { mapTask } from '../models/task';
+import { mapTask, collectAllLeafTasks } from '../models/task';
 import { mkProject } from '../models/project';
 import { mkTeam } from '../models/team';
 import { reorderTaskInColumn } from '../models/ordering';
@@ -90,6 +90,29 @@ export default function App() {
   const handleDeleteSnapshot = (id: string) => {
     updateTeam(selectedTeamId, t => ({ ...t, snapshots: t.snapshots.filter(s => s.id !== id) }));
   };
+
+  const handleCloseSnapshot = useCallback((snapshotId: string) => {
+    updateTeam(selectedTeamId, t => ({
+      ...t,
+      snapshots: t.snapshots.map(snap => {
+        if (snap.id !== snapshotId) return snap;
+        return {
+          ...snap,
+          closedAt: new Date().toISOString(),
+          projectSnapshots: snap.projectSnapshots.map(pSnap => {
+            const currentProject = t.projects.find(p => p.id === pSnap.projectId);
+            const closedTaskStatuses: Record<string, string> = {};
+            if (currentProject) {
+              collectAllLeafTasks(currentProject.root).forEach(task => {
+                closedTaskStatuses[task.id] = task.status;
+              });
+            }
+            return { ...pSnap, closedTaskStatuses };
+          }),
+        };
+      }),
+    }));
+  }, [selectedTeamId, updateTeam]);
 
   let goalDrilldownData: { snap: NonNullable<Team["snapshots"][0]>; pSnap: NonNullable<Team["snapshots"][0]["projectSnapshots"][0]>; currentProject: Project | undefined } | null = null;
   if (goalDrilldown && teamView === "goals") {
@@ -247,9 +270,9 @@ export default function App() {
               {teamView === "timeline" && <TimelineView projects={selectedTeam?.projects || []} taskOrder={selectedTeam?.taskOrder || {}} />}
               {teamView === "goals" && (
                 goalDrilldownData ? (
-                  <ProjectGoalDetail projectSnapshot={goalDrilldownData.pSnap} currentProject={goalDrilldownData.currentProject} onBack={() => setGoalDrilldown(null)} projects={selectedTeam?.projects || []} onUpdateTaskInProject={onUpdateTaskInProject} />
+                  <ProjectGoalDetail projectSnapshot={goalDrilldownData.pSnap} currentProject={goalDrilldownData.currentProject} onBack={() => setGoalDrilldown(null)} projects={selectedTeam?.projects || []} onUpdateTaskInProject={goalDrilldownData.snap.closedAt ? null : onUpdateTaskInProject} />
                 ) : (
-                  <GoalsView team={selectedTeam} onDeleteSnapshot={handleDeleteSnapshot} onSelectProjectGoal={handleSelectProjectGoal} />
+                  <GoalsView team={selectedTeam} onDeleteSnapshot={handleDeleteSnapshot} onSelectProjectGoal={handleSelectProjectGoal} onCloseSnapshot={handleCloseSnapshot} />
                 )
               )}
             </>

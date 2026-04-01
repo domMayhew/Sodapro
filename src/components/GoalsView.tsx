@@ -223,10 +223,11 @@ export function ProjectGoalDetail({ projectSnapshot, currentProject, onBack, pro
 }
 
 /* ── GoalsView ─────────────────────────────────────────────────── */
-export function GoalsView({ team, onDeleteSnapshot, onSelectProjectGoal }: {
+export function GoalsView({ team, onDeleteSnapshot, onSelectProjectGoal, onCloseSnapshot }: {
   team: Team;
   onDeleteSnapshot: (id: string) => void;
   onSelectProjectGoal: (snapshotId: string, projectId: string) => void;
+  onCloseSnapshot?: (id: string) => void;
 }) {
   const { snapshots, projects } = team;
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -342,6 +343,20 @@ export function GoalsView({ team, onDeleteSnapshot, onSelectProjectGoal }: {
           <select value={snapshot.id} onChange={e => setSelectedId(e.target.value)} style={{ fontSize: 12, border: `1px solid ${C.border}`, borderRadius: 6, padding: "4px 8px", color: C.text, fontFamily: "inherit", background: C.surface, outline: "none", cursor: "pointer" }}>
             {snapshots.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
+          {snapshot.closedAt ? (
+            <span style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", fontSize: 11, fontWeight: 600, borderRadius: 6, background: C.stripe, border: `1px solid ${C.border}`, color: C.textSub }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.textSub, flexShrink: 0 }} />
+              Closed {new Date(snapshot.closedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            </span>
+          ) : (
+            <button onClick={() => onCloseSnapshot?.(snapshot.id)}
+              style={{ padding: "4px 10px", fontSize: 11, fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: 6, background: C.surface, color: C.textMid, cursor: "pointer", fontFamily: "inherit" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = C.amber; (e.currentTarget as HTMLElement).style.color = C.amber; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = C.border; (e.currentTarget as HTMLElement).style.color = C.textMid; }}
+              title="Close goal — freezes story points completed">
+              Close Goal
+            </button>
+          )}
           <button onClick={() => setConfirmDelete(snapshot.id)} style={{ padding: "4px 8px", fontSize: 11, border: `1px solid ${C.border}`, borderRadius: 6, background: C.surface, color: C.textSub, cursor: "pointer", fontFamily: "inherit" }} title="Delete goal">🗑</button>
         </div>
       </div>
@@ -350,8 +365,11 @@ export function GoalsView({ team, onDeleteSnapshot, onSelectProjectGoal }: {
         <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
           <div style={{ width: 36, height: 36, borderRadius: 9, background: C.tealLight, border: `1px solid ${C.teal}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>🎯</div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{snapshot.label}</div>
-            <div style={{ fontSize: 11, color: C.textSub }}>Set {fmt(snapshot.createdAt)} · Target {fmt(snapshot.targetDate)}{isPastDue && <span style={{ color: C.red, fontWeight: 600, marginLeft: 6 }}>· Past due</span>}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{snapshot.label}</div>
+              {snapshot.closedAt && <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 3, background: C.stripe, color: C.textSub, border: `1px solid ${C.border}`, letterSpacing: "0.06em" }}>CLOSED</span>}
+            </div>
+            <div style={{ fontSize: 11, color: C.textSub }}>Set {fmt(snapshot.createdAt)} · Target {fmt(snapshot.targetDate)}{isPastDue && !snapshot.closedAt && <span style={{ color: C.red, fontWeight: 600, marginLeft: 6 }}>· Past due</span>}</div>
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
