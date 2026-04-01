@@ -27,7 +27,9 @@ export function resolveProjectGoalScope(pSnap: ProjectSnapshot, currentProject: 
 
     const isMissing  = !curr;
     const isArchived = curr?.archived ?? false;
-    const status     = curr?.status || "todo";
+    const status     = pSnap.closedTaskStatuses
+      ? (pSnap.closedTaskStatuses[t.id] ?? "todo")
+      : (curr?.status || "todo");
     const isDone     = !isMissing && !isArchived && status === "done";
 
     return {

@@ -49,6 +49,7 @@ export interface GoalSnapshot {
   targetDate: string;
   velocity: number;
   projectSnapshots: ProjectSnapshot[];
+  closedAt?: string;
 }
 
 export interface ProjectSnapshot {
@@ -57,6 +58,7 @@ export interface ProjectSnapshot {
   ratio: number[];
   root: Task;
   inScopeIds: string[];
+  closedTaskStatuses?: Record<string, string>;
 }
 
 export interface Points {
