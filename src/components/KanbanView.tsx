@@ -318,7 +318,7 @@ export function KanbanView({ projects, onUpdateTaskInProject, taskOrder, onReord
         const isLast = ai === assignees.length - 1;
         return (
           <div key={assignee} style={{ display: "flex", gap: 0, minWidth: `${140 + STATUSES.length * COL_MIN_W}px`, borderBottom: isLast ? `1px solid ${C.border}` : "none" }}>
-            <div style={{ width: 140, flexShrink: 0, padding: "14px 10px 14px 14px", background: C.surface, borderLeft: `1px solid ${C.border}`, borderRight: `1px solid ${C.border}`, borderTop: `1px solid ${C.border}`, borderRadius: isLast ? "0 0 0 10px" : "0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: 6, paddingTop: 16 }}>
+            <div style={{ width: 140, flexShrink: 0, boxSizing: "border-box", padding: "14px 10px 14px 14px", background: C.surface, borderLeft: `1px solid ${C.border}`, borderRight: `1px solid ${C.border}`, borderTop: `1px solid ${C.border}`, borderRadius: isLast ? "0 0 0 10px" : "0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: 6, paddingTop: 16 }}>
               {assignee !== "Unassigned"
                 ? <Avatar name={assignee} allNames={allNames} size={30} />
                 : <div style={{ width: 30, height: 30, borderRadius: "50%", background: C.stripe, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 14 }}>?</span></div>}
