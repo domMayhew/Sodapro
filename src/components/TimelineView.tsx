@@ -4,7 +4,7 @@ import { ACTIVE_STATUSES, statusById } from '../constants/statuses';
 import { computePts, collectLeafTasks } from '../models/task';
 import { effectiveProjectStatus } from '../models/project';
 import { sortTasksByOrder } from '../models/ordering';
-import { TL, tlGetHue, tlWorkingDaysArr, tlIsMonday, tlBuildConcurrencyMap, tlComputeBurnedDays } from '../models/timeline';
+import { TL, tlGetHue, tlWorkingDaysArr, tlIsMonday, tlIsWeekend, tlBuildConcurrencyMap, tlComputeBurnedDays } from '../models/timeline';
 import { useWindowWidth } from '../hooks';
 import type { Project, Task, TimelineItem } from '../types';
 import { Avatar, Stepper } from './ui';
@@ -20,12 +20,16 @@ function TimelineBlock({ item, hue }: { item: TimelineItem; hue: number }) {
   const txtSub  = isActive ? `hsl(${hue},45%,38%)` : `hsl(${hue},35%,50%)`;
   const spLabel = item.burned > 0 ? `${item.pts.total}sp · ${item.remainingDays}d left` : `${item.pts.total}sp`;
   const statusDot = isActive ? <span style={{ width: 6, height: 6, borderRadius: "50%", background: statusById(item.task.status).dot, flexShrink: 0 }} /> : null;
+  const burnedFrac = item.backDays > 0 ? item.backDays / item.duration : 0;
 
   return (
     <div title={`${item.task.name} · ${item.pts.total}sp${item.burned > 0 ? ` · ~${item.remainingDays}d remaining (${item.burned.toFixed(1)}d burned)` : ""}`}
       style={{ position: "absolute", left: item.startDay * TL.DAY_W + 4, top: 11, width: W, height: H, borderRadius: 7, background: bg, border, display: "flex", alignItems: "center", padding: "0 8px", gap: 5, overflow: "hidden", userSelect: "none", transition: "box-shadow 0.12s" }}
       onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 10px rgba(0,0,0,0.13)"}
       onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = "none"}>
+      {burnedFrac > 0 && (
+        <div style={{ position: "absolute", left: 0, top: 0, width: `${burnedFrac * 100}%`, height: "100%", background: "rgba(0,0,0,0.07)", borderRadius: "6px 0 0 6px", pointerEvents: "none" }} />
+      )}
       {statusDot}
       <span style={{ fontSize: 11, fontWeight: isActive ? 700 : 600, color: txtMain, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{item.task.name}</span>
       {W > 80 && <span style={{ fontSize: 10, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, color: txtSub, flexShrink: 0 }}>{spLabel}</span>}
@@ -70,8 +74,14 @@ export function TimelineView({ projects, taskOrder }: {
   projects: Project[];
   taskOrder: Record<string, string[]>;
 }) {
+  const PAST_DAYS = 3;
   const [velocity, setVelocity] = useState(2);
-  const [startDate, setStartDate] = useState(() => { const d = new Date(); d.setHours(0,0,0,0); return d; });
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date(); d.setHours(0,0,0,0);
+    let count = 0;
+    while (count < PAST_DAYS) { d.setDate(d.getDate() - 1); if (!tlIsWeekend(d)) count++; }
+    return d;
+  });
   const windowWidth = useWindowWidth();
   const compact = windowWidth < 600;
   const sidebarW = compact ? TL.SIDEBAR_W_COMPACT : TL.SIDEBAR_W;
@@ -106,11 +116,11 @@ export function TimelineView({ projects, taskOrder }: {
     return sorted;
   }, [allLeafs, taskOrder]);
 
-  const getLayout = useCallback((assignee: string): TimelineItem[] => {
+  const getLayout = useCallback((assignee: string, pastOffset: number): TimelineItem[] => {
     const ids = orderMap[assignee] || [];
     const assigneeTasks = ids.map(id => taskById[id]).filter(Boolean);
     const concurrencyMap = tlBuildConcurrencyMap(assigneeTasks);
-    let day = 0;
+    let day = pastOffset;
     return ids.reduce((acc: TimelineItem[], id) => {
       const task = taskById[id];
       if (!task) return acc;
@@ -120,24 +130,36 @@ export function TimelineView({ projects, taskOrder }: {
       const fullDuration = Math.max(1, Math.ceil(pts.total / velocity));
       let remainingDays = fullDuration;
       let burned = 0;
+      let backDays = 0;
       if (ACTIVE_STATUSES.has(task.status)) {
         burned = tlComputeBurnedDays(task, concurrencyMap);
         remainingDays = Math.max(1, Math.ceil(fullDuration - burned));
+        backDays = Math.min(Math.round(burned), pastOffset);
       }
-      acc.push({ id, task, pts, duration: remainingDays, remainingDays, burned, startDay: day, endDay: day + remainingDays });
+      acc.push({ id, task, pts, duration: backDays + remainingDays, remainingDays, burned, backDays, startDay: day - backDays, endDay: day + remainingDays });
       day += remainingDays;
       return acc;
     }, []);
   }, [orderMap, taskById, velocity, defaultRatio]);
 
+  // Compute todayOff directly from startDate so it's available before dates/totalWorkingDays
+  const todayOff = useMemo(() => {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const start = new Date(startDate); start.setHours(0,0,0,0);
+    let count = 0; const d = new Date(start);
+    while (d.getTime() < today.getTime()) { d.setDate(d.getDate() + 1); if (!tlIsWeekend(d)) count++; }
+    return d.getTime() === today.getTime() ? count : -1;
+  }, [startDate]);
+
+  const safeTodayOff = Math.max(0, todayOff);
+
   const totalWorkingDays = useMemo(() => {
     let max = 0;
-    for (const a of assigneeGroups.keys()) { const l = getLayout(a); if (l.length) max = Math.max(max, l[l.length - 1].endDay); }
+    for (const a of assigneeGroups.keys()) { const l = getLayout(a, safeTodayOff); if (l.length) max = Math.max(max, l[l.length - 1].endDay); }
     return Math.max(max + 5, 25);
-  }, [assigneeGroups, getLayout]);
+  }, [assigneeGroups, getLayout, safeTodayOff]);
 
   const dates = useMemo(() => tlWorkingDaysArr(startDate, totalWorkingDays), [startDate, totalWorkingDays]);
-  const todayOff = useMemo(() => { const t = new Date(); t.setHours(0,0,0,0); return dates.findIndex(d => d.getTime() === t.getTime()); }, [dates]);
   const monthGroups = useMemo(() => {
     const groups: { label: string; days: number }[] = []; let cur: string | null = null, cnt = 0;
     dates.forEach(d => { const key = d.toLocaleDateString("en-US", { month: "short", year: "numeric" }); if (key !== cur) { if (cur) groups.push({ label: cur, days: cnt }); cur = key; cnt = 0; } cnt++; });
@@ -194,7 +216,7 @@ export function TimelineView({ projects, taskOrder }: {
             ? <div style={{ padding: 48, textAlign: "center", color: C.textSub, fontSize: 13 }}>No assignees yet.</div>
             : assignees.map((a, li) => {
               const hue = tlGetHue(a);
-              const layout = getLayout(a);
+              const layout = getLayout(a, safeTodayOff);
               const totalLaneDays = layout.reduce((s, l) => s + l.duration, 0);
               return (
                 <div key={a} style={{ display: "flex", borderBottom: li < assignees.length - 1 ? `1px solid ${C.border}` : "none", minHeight: TL.LANE_H }}>

@@ -147,6 +147,7 @@ export interface TimelineItem {
   duration: number;
   remainingDays: number;
   burned: number;
+  backDays: number;
   startDay: number;
   endDay: number;
 }
