@@ -63,7 +63,7 @@ export function EstimateView({ project, onUpdateProject, onDeleteProject }: {
   };
 
   return (
-    <div style={{ maxWidth: 860, margin: "24px auto", padding: "0 16px" }}>
+    <div style={{ maxWidth: 1100, margin: "24px auto", padding: "0 24px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
         <div>
           {editingName ? (
