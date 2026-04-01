@@ -47,6 +47,32 @@ export interface Team {
   snapshots: GoalSnapshot[];
   taskOrder: Record<string, string[]>;
   createdAt: string;
+  journalEntries?: JournalEntry[];
+  personalTimers?: Record<string, PersonalTimer[]>;
+  activeJournalAssignee?: string;
+}
+
+export interface PersonalTimerEntry {
+  startedAt: string;
+  stoppedAt?: string;
+}
+
+export interface PersonalTimer {
+  id: string;
+  label: string;
+  entries: PersonalTimerEntry[];
+}
+
+export interface JournalEntry {
+  id: string;
+  assignee: string;
+  date: string;
+  type: 'note' | 'todo' | 'time';
+  text: string;
+  private: boolean;
+  durationMinutes?: number;
+  resolvedAt?: string;
+  createdAt: string;
 }
 
 export interface GoalSnapshot {
