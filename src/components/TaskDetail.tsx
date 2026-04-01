@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, ReactNode } from 'react';
 import { C } from '../constants/colors';
 import { STATUSES } from '../constants/statuses';
-import { computePts, trackChange, withStatusChange, collectLeafAssignees } from '../models/task';
+import { computePts, trackChange, withStatusChange, collectLeafAssignees, isTimerRunning, activeTimerPhase, getTrackedMinutes, formatTrackedTime, startTimer, stopTimer } from '../models/task';
 import { useClickOutside } from '../hooks';
 import type { Task, Points } from '../types';
 import {
@@ -63,6 +63,13 @@ export function TaskDetailContent({ task, pts, isLeaf, onUpdate, allAssignees, a
   const sec: React.CSSProperties = { marginBottom: 12 };
   const divider: React.CSSProperties = { height: 1, background: C.border, margin: "10px 0" };
   const rolledAssignees = !isLeaf ? collectLeafAssignees(task) : [];
+  const timerRunning = isTimerRunning(task);
+  const [, setTimerTick] = useState(0);
+  useEffect(() => {
+    if (!timerRunning) return;
+    const id = setInterval(() => setTimerTick(t => t + 1), 30000);
+    return () => clearInterval(id);
+  }, [timerRunning]);
   const [nameDraft, setNameDraft] = useState(task.name);
   const [descDraft, setDescDraft] = useState(task.description || "");
   useEffect(() => { setNameDraft(task.name); }, [task.name]);
@@ -159,6 +166,44 @@ export function TaskDetailContent({ task, pts, isLeaf, onUpdate, allAssignees, a
           <StatusPicker status={task.status || "todo"} onChange={s => onUpdate && onUpdate(t => withStatusChange(t, s))} />
         )}
       </div>
+      {(() => {
+        const workMins = getTrackedMinutes(task, 'work');
+        const reviewMins = getTrackedMinutes(task, 'review');
+        if (workMins === 0 && reviewMins === 0 && task.status !== "inprogress" && task.status !== "inreview") return null;
+        const phases: { phase: 'work' | 'review'; label: string; color: string; mins: number }[] = [
+          { phase: 'work',   label: 'Work',   color: C.accent, mins: workMins   },
+          { phase: 'review', label: 'Review', color: C.amber,  mins: reviewMins },
+        ];
+        return (
+          <>
+            <div style={divider} />
+            <div>
+              <div style={fl}>TIME TRACKED</div>
+              {phases.map(({ phase, label, color, mins }) => {
+                const isActive = task.status === (phase === 'work' ? "inprogress" : "inreview");
+                const thisRunning = timerRunning && activeTimerPhase(task) === phase;
+                if (mins === 0 && !isActive) return null;
+                return (
+                  <div key={phase} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                    <span style={{ fontSize: 11, color: C.textMid, flex: 1 }}>{label}</span>
+                    <span style={{ fontSize: 12, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, color: thisRunning ? color : mins > 0 ? C.text : C.textSub, minWidth: 36, textAlign: "right" }}>
+                      {mins > 0 ? formatTrackedTime(mins) : "—"}
+                    </span>
+                    {isActive && !readOnly && onUpdate && (
+                      <button
+                        onClick={() => onUpdate(thisRunning ? stopTimer : t => startTimer(t, phase))}
+                        style={{ width: 22, height: 22, border: `1px solid ${thisRunning ? color : C.border}`, borderRadius: 5, background: thisRunning ? color + "18" : C.stripe, color: thisRunning ? color : C.textSub, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, padding: 0, flexShrink: 0 }}
+                        title={thisRunning ? "Pause" : `Track ${label.toLowerCase()} time`}>
+                        {thisRunning ? "⏸" : "▶"}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        );
+      })()}
     </>
   );
 }

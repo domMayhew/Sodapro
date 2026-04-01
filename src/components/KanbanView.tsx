@@ -1,7 +1,7 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { C } from '../constants/colors';
 import { STATUSES } from '../constants/statuses';
-import { withStatusChange, collectLeafTasks, computePts, getTaskBreadcrumbAcrossProjects } from '../models/task';
+import { withStatusChange, collectLeafTasks, computePts, getTaskBreadcrumbAcrossProjects, isTimerRunning, activeTimerPhase, getTrackedMinutes, formatTrackedTime, startTimer, stopTimer } from '../models/task';
 import { effectiveProjectStatus } from '../models/project';
 import { sortTasksByOrder } from '../models/ordering';
 import { useClickOutside } from '../hooks';
@@ -43,6 +43,41 @@ function KanbanContextMenu({ anchorPos, task, onStatusChange, onClose }: {
           <span>{label.replace(/^← /, "").replace(/ →$/, "")}</span>
         </button>
       ))}
+    </div>
+  );
+}
+
+/* ── TimerButton ───────────────────────────────────────────────── */
+function TimerButton({ task, phase, onUpdate }: {
+  task: Task;
+  phase: 'work' | 'review';
+  onUpdate: (fn: (t: Task) => Task) => void;
+}) {
+  const running = isTimerRunning(task);
+  const thisRunning = running && activeTimerPhase(task) === phase;
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!thisRunning) return;
+    const id = setInterval(() => setTick(t => t + 1), 30000);
+    return () => clearInterval(id);
+  }, [thisRunning]);
+
+  const mins = getTrackedMinutes(task, phase);
+  const color = phase === 'work' ? C.accent : C.amber;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 3 }}
+      onClick={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}>
+      {mins > 0 && (
+        <span style={{ fontSize: 9, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, color: thisRunning ? color : C.textSub }}>
+          {formatTrackedTime(mins)}
+        </span>
+      )}
+      <button
+        onClick={() => onUpdate(thisRunning ? stopTimer : t => startTimer(t, phase))}
+        style={{ width: 18, height: 18, border: `1px solid ${thisRunning ? color : C.border}`, borderRadius: 4, background: thisRunning ? color + "18" : C.stripe, color: thisRunning ? color : C.textSub, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, padding: 0, flexShrink: 0 }}
+        title={thisRunning ? "Pause timer" : `Track ${phase} time`}>
+        {thisRunning ? "⏸" : "▶"}
+      </button>
     </div>
   );
 }
@@ -112,8 +147,16 @@ function KanbanCard({ task, allNames, projectName, onStatusChange, onUpdateTask,
             {task.tags.length > 2 && <span style={{ fontSize: 9, color: C.textSub, padding: "1px 4px" }}>+{task.tags.length - 2}</span>}
           </div>
         )}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <Avatar name={task.assignee} allNames={allNames} size={18} />
+          <div style={{ flex: 1 }} />
+          {(task.status === "inprogress" || task.status === "inreview") && (
+            <TimerButton
+              task={task}
+              phase={task.status === "inprogress" ? "work" : "review"}
+              onUpdate={fn => onUpdateTask(task._projectId!, task.id, fn)}
+            />
+          )}
           {pts > 0 && <span style={{ fontSize: 10, fontFamily: "'IBM Plex Mono', monospace", fontWeight: 700, color: C.accent, background: C.accentLight, padding: "1px 5px", borderRadius: 3, border: `1px solid ${C.border}` }}>{pts}sp</span>}
         </div>
         {menu && <KanbanContextMenu anchorPos={menu} task={task} onStatusChange={onStatusChange} onClose={() => setMenu(null)} />}
