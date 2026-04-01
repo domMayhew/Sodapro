@@ -121,6 +121,7 @@ export function TimelineView({ projects, taskOrder }: {
     const assigneeTasks = ids.map(id => taskById[id]).filter(Boolean);
     const concurrencyMap = tlBuildConcurrencyMap(assigneeTasks);
     let day = pastOffset;
+    let minStartDay = 0; // end of previous block — backDays must not go before this
     return ids.reduce((acc: TimelineItem[], id) => {
       const task = taskById[id];
       if (!task) return acc;
@@ -134,9 +135,12 @@ export function TimelineView({ projects, taskOrder }: {
       if (ACTIVE_STATUSES.has(task.status)) {
         burned = tlComputeBurnedDays(task, concurrencyMap);
         remainingDays = Math.max(1, Math.ceil(fullDuration - burned));
-        backDays = Math.min(Math.round(burned), pastOffset);
+        backDays = Math.max(0, Math.min(Math.round(burned), pastOffset, day - minStartDay));
       }
-      acc.push({ id, task, pts, duration: backDays + remainingDays, remainingDays, burned, backDays, startDay: day - backDays, endDay: day + remainingDays });
+      const startDay = day - backDays;
+      const endDay = day + remainingDays;
+      acc.push({ id, task, pts, duration: backDays + remainingDays, remainingDays, burned, backDays, startDay, endDay });
+      minStartDay = endDay;
       day += remainingDays;
       return acc;
     }, []);
@@ -171,7 +175,7 @@ export function TimelineView({ projects, taskOrder }: {
   const dayMeta = useMemo(() => dates.map((d, i) => ({ mon: tlIsMonday(d), isToday: i === todayOff })), [dates, todayOff]);
 
   return (
-    <div style={{ maxWidth: 1080, margin: "24px auto", padding: "0 16px" }}>
+    <div style={{ maxWidth: 1400, margin: "24px auto", padding: "0 24px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
         <div>
           <h1 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 600, color: C.text }}>Timeline</h1>

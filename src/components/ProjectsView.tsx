@@ -207,7 +207,7 @@ export function ProjectsView({ projects, onSelectProject, onUpdateProject, onDel
   }, [projects]);
 
   return (
-    <div style={{ maxWidth: 900, margin: "24px auto", padding: "0 16px" }}>
+    <div style={{ maxWidth: 1400, margin: "24px auto", padding: "0 24px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
         <div>
           <h1 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 600, color: C.text }}>Projects</h1>

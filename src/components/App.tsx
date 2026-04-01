@@ -131,7 +131,7 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, display: "flex", flexDirection: "column", fontFamily: "'Instrument Sans', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
 
       {isMobile && drawerOpen && (
@@ -149,15 +149,15 @@ export default function App() {
                 const hue = [...team.name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
                 return (
                   <div key={team.id} onClick={() => { handleSelectTeam(team.id); setDrawerOpen(false); }}
-                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 7, marginBottom: 2, cursor: "pointer", background: isSelected ? `hsl(${hue},35%,22%)` : "transparent", border: `1px solid ${isSelected ? `hsl(${hue},45%,30%)` : "transparent"}` }}
-                    onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; }}
-                    onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = isSelected ? `hsl(${hue},35%,22%)` : "transparent"; }}>
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 7, marginBottom: 2, cursor: "pointer", background: isSelected ? `hsl(${hue},80%,94%)` : "transparent", border: `1px solid ${isSelected ? `hsl(${hue},50%,78%)` : "transparent"}` }}
+                    onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "rgba(0,0,0,0.04)"; }}
+                    onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = isSelected ? `hsl(${hue},80%,94%)` : "transparent"; }}>
                     <div style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0, background: `hsl(${hue},45%,35%)`, color: `hsl(${hue},45%,90%)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700 }}>{team.name.charAt(0).toUpperCase()}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: isSelected ? 600 : 400, color: isSelected ? C.sidebarText : C.sidebarSub, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{team.name}</div>
+                      <div style={{ fontSize: 13, fontWeight: isSelected ? 600 : 400, color: isSelected ? C.text : C.sidebarSub, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{team.name}</div>
                       <div style={{ fontSize: 10, color: C.sidebarSub }}>{team.projects.length} project{team.projects.length !== 1 ? "s" : ""}</div>
                     </div>
-                    {isSelected && <span style={{ width: 6, height: 6, borderRadius: "50%", background: `hsl(${hue},70%,65%)`, flexShrink: 0 }} />}
+                    {isSelected && <span style={{ width: 6, height: 6, borderRadius: "50%", background: `hsl(${hue},55%,45%)`, flexShrink: 0 }} />}
                   </div>
                 );
               })}

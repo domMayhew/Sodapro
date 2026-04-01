@@ -7,5 +7,5 @@ export const C = {
   purple: "#7c3aed", purpleLight: "#f5f3ff",
   red: "#dc2626", redLight: "#fef2f2",
   teal: "#0d9488", tealLight: "#f0fdfa",
-  sidebar: "#16181f", sidebarBorder: "#2a2d38", sidebarText: "#c8cdd9", sidebarSub: "#6b7280",
+  sidebar: "#ffffff", sidebarBorder: "#e4e7ee", sidebarText: "#1a1d27", sidebarSub: "#8b91aa",
 };

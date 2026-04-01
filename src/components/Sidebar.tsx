@@ -36,9 +36,9 @@ export function Sidebar({ teams, selectedTeamId, onSelectTeam, onAddTeam, collap
             <div key={team.id} onClick={() => { if (!isEditing) onSelectTeam(team.id); }}
               onDoubleClick={() => { if (!collapsed) { setEditingTeamId(team.id); setDraft(team.name); } }}
               title={collapsed ? team.name : undefined}
-              style={{ display: "flex", alignItems: "center", gap: collapsed ? 0 : 8, padding: collapsed ? "8px 0" : "7px 8px", justifyContent: collapsed ? "center" : "flex-start", borderRadius: 6, cursor: "pointer", marginBottom: 2, background: isSelected ? `hsl(${hue},35%,22%)` : "transparent", border: `1px solid ${isSelected ? `hsl(${hue},45%,30%)` : "transparent"}`, transition: "all 0.1s" }}
-              onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; }}
-              onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = isSelected ? `hsl(${hue},35%,22%)` : "transparent"; }}>
+              style={{ display: "flex", alignItems: "center", gap: collapsed ? 0 : 8, padding: collapsed ? "8px 0" : "7px 8px", justifyContent: collapsed ? "center" : "flex-start", borderRadius: 6, cursor: "pointer", marginBottom: 2, background: isSelected ? `hsl(${hue},80%,94%)` : "transparent", border: `1px solid ${isSelected ? `hsl(${hue},50%,78%)` : "transparent"}`, transition: "all 0.1s" }}
+              onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "rgba(0,0,0,0.04)"; }}
+              onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = isSelected ? `hsl(${hue},80%,94%)` : "transparent"; }}>
               <div style={{ width: collapsed ? 28 : 24, height: collapsed ? 28 : 24, borderRadius: collapsed ? 7 : 6, flexShrink: 0, background: `hsl(${hue},45%,35%)`, color: `hsl(${hue},45%,90%)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: collapsed ? 12 : 11, fontWeight: 700 }}>
                 {team.name.charAt(0).toUpperCase()}
               </div>
@@ -51,12 +51,12 @@ export function Sidebar({ teams, selectedTeamId, onSelectTeam, onAddTeam, collap
                     style={{ flex: 1, background: "transparent", border: "none", borderBottom: `1px solid ${C.sidebarSub}`, color: C.sidebarText, fontSize: 13, fontFamily: "inherit", outline: "none", padding: "0 0 2px" }} />
                 ) : (
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: isSelected ? 600 : 400, color: isSelected ? C.sidebarText : C.sidebarSub, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{team.name}</div>
+                    <div style={{ fontSize: 13, fontWeight: isSelected ? 600 : 400, color: isSelected ? C.text : C.sidebarSub, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{team.name}</div>
                     <div style={{ fontSize: 10, color: C.sidebarSub }}>{team.projects.length} project{team.projects.length !== 1 ? "s" : ""}</div>
                   </div>
                 )
               )}
-              {!collapsed && isSelected && !isEditing && <span style={{ width: 6, height: 6, borderRadius: "50%", background: `hsl(${hue},70%,65%)`, flexShrink: 0 }} />}
+              {!collapsed && isSelected && !isEditing && <span style={{ width: 6, height: 6, borderRadius: "50%", background: `hsl(${hue},55%,45%)`, flexShrink: 0 }} />}
             </div>
           );
         })}

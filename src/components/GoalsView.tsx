@@ -131,7 +131,7 @@ export function ProjectGoalDetail({ projectSnapshot, currentProject, onBack, pro
   const clickableRow: React.CSSProperties = { cursor: "pointer" };
 
   return (
-    <div style={{ maxWidth: 860, margin: "24px auto", padding: "0 16px" }}>
+    <div style={{ maxWidth: 1100, margin: "24px auto", padding: "0 24px" }}>
       <button onClick={onBack}
         style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 18, padding: "5px 12px 5px 8px", border: `1px solid ${C.border}`, borderRadius: 7, background: C.surface, color: C.textMid, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = C.accent; (e.currentTarget as HTMLElement).style.color = C.accent; }}
@@ -239,7 +239,7 @@ export function GoalsView({ team, onDeleteSnapshot, onSelectProjectGoal, onClose
 
   if (snapshots.length === 0) {
     return (
-      <div style={{ maxWidth: 860, margin: "48px auto", padding: "0 16px", textAlign: "center" }}>
+      <div style={{ maxWidth: 1100, margin: "48px auto", padding: "0 24px", textAlign: "center" }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>🎯</div>
         <div style={{ fontSize: 18, fontWeight: 600, color: C.text, marginBottom: 8 }}>No goals yet</div>
         <div style={{ fontSize: 13, color: C.textSub, maxWidth: 360, margin: "0 auto" }}>Set a goal using the 🎯 Set Goal button to snapshot your team's current plan. Then come back here to review progress.</div>
@@ -332,7 +332,7 @@ export function GoalsView({ team, onDeleteSnapshot, onSelectProjectGoal, onClose
   const paused  = projectSummaries.filter(s => s.isPaused);
 
   return (
-    <div style={{ maxWidth: 900, margin: "24px auto", padding: "0 16px" }}>
+    <div style={{ maxWidth: 1400, margin: "24px auto", padding: "0 24px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
         <div>
           <h1 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 600, color: C.text }}>Goals</h1>
