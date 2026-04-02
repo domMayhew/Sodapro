@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { C } from '../constants/colors';
 import { collectAllLeafTasks } from '../models/task';
 import {
@@ -39,6 +39,13 @@ export function DailyJournalView({ team, onUpdateTeam }: Props) {
   const [copied, setCopied] = useState(false);
   const [newTimerLabel, setNewTimerLabel] = useState('');
   const [addingTimer, setAddingTimer] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 700);
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 700);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
 
   const days = useMemo(() => weekDays(weekStart), [weekStart]);
 
@@ -144,7 +151,7 @@ export function DailyJournalView({ team, onUpdateTeam }: Props) {
   };
 
   return (
-    <div style={{ padding: "20px 20px 40px", maxWidth: 900, margin: "0 auto" }}>
+    <div style={{ padding: isMobile ? "12px 12px 40px" : "20px 20px 40px", maxWidth: 900, margin: "0 auto" }}>
       {/* Assignee selector */}
       {assignees.length === 0 ? (
         <div style={{ padding: "40px 20px", textAlign: "center", color: C.textSub, fontSize: 13 }}>
@@ -200,7 +207,7 @@ export function DailyJournalView({ team, onUpdateTeam }: Props) {
             <button onClick={() => navigateWeek(1)} style={{ padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 6, background: C.surface, color: C.textMid, fontSize: 14, cursor: "pointer", fontFamily: "inherit", lineHeight: 1 }}>›</button>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "start" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 20, alignItems: "start" }}>
             {/* Left column: Activity + What's Next */}
             <div>
               <div style={{ fontSize: 11, fontWeight: 700, color: C.textSub, letterSpacing: "0.08em", marginBottom: 10 }}>ACTIVITY</div>
@@ -268,7 +275,7 @@ export function DailyJournalView({ team, onUpdateTeam }: Props) {
             {/* Right column: Journal entries + Timers */}
             <div>
               {/* Journal entries header */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: C.textSub, letterSpacing: "0.08em" }}>JOURNAL</div>
                 <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
                   {(['note', 'todo', 'time'] as const).map(type => (
@@ -315,8 +322,8 @@ export function DailyJournalView({ team, onUpdateTeam }: Props) {
                       Private
                     </label>
                     <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-                      <button onClick={() => { setAddingType(null); setNewText(''); setNewMins(''); }} style={{ padding: "5px 12px", border: `1px solid ${C.border}`, borderRadius: 6, background: C.surface, color: C.textMid, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
-                      <button onClick={addEntry} disabled={!newText.trim()} style={{ padding: "5px 12px", border: "none", borderRadius: 6, background: newText.trim() ? C.accent : C.border, color: "#fff", fontSize: 12, fontWeight: 600, cursor: newText.trim() ? "pointer" : "default", fontFamily: "inherit" }}>Add</button>
+                      <button onPointerDown={e => e.preventDefault()} onClick={() => { setAddingType(null); setNewText(''); setNewMins(''); }} style={{ padding: "5px 12px", border: `1px solid ${C.border}`, borderRadius: 6, background: C.surface, color: C.textMid, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                      <button onPointerDown={e => e.preventDefault()} onClick={addEntry} disabled={!newText.trim()} style={{ padding: "5px 12px", border: "none", borderRadius: 6, background: newText.trim() ? C.accent : C.border, color: "#fff", fontSize: 12, fontWeight: 600, cursor: newText.trim() ? "pointer" : "default", fontFamily: "inherit" }}>Add</button>
                     </div>
                   </div>
                 </div>
@@ -383,7 +390,7 @@ export function DailyJournalView({ team, onUpdateTeam }: Props) {
                     placeholder="Timer label…"
                     style={{ flex: 1, padding: "6px 10px", border: `1px solid ${C.border}`, borderRadius: 6, fontSize: 13, fontFamily: "inherit", background: C.surface, color: C.text, outline: "none" }}
                   />
-                  <button onClick={addTimer} disabled={!newTimerLabel.trim()} style={{ padding: "6px 12px", border: "none", borderRadius: 6, background: newTimerLabel.trim() ? C.accent : C.border, color: "#fff", fontSize: 12, fontWeight: 600, cursor: newTimerLabel.trim() ? "pointer" : "default", fontFamily: "inherit" }}>
+                  <button onPointerDown={e => e.preventDefault()} onClick={addTimer} disabled={!newTimerLabel.trim()} style={{ padding: "6px 12px", border: "none", borderRadius: 6, background: newTimerLabel.trim() ? C.accent : C.border, color: "#fff", fontSize: 12, fontWeight: 600, cursor: newTimerLabel.trim() ? "pointer" : "default", fontFamily: "inherit" }}>
                     Add
                   </button>
                 </div>
