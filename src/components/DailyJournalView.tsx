@@ -323,7 +323,7 @@ export function DailyJournalView({ team, onUpdateTeam }: Props) {
                     </label>
                     <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
                       <button onPointerDown={e => e.preventDefault()} onClick={() => { setAddingType(null); setNewText(''); setNewMins(''); }} style={{ padding: "5px 12px", border: `1px solid ${C.border}`, borderRadius: 6, background: C.surface, color: C.textMid, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
-                      <button onPointerDown={e => e.preventDefault()} onClick={addEntry} disabled={!newText.trim()} style={{ padding: "5px 12px", border: "none", borderRadius: 6, background: newText.trim() ? C.accent : C.border, color: "#fff", fontSize: 12, fontWeight: 600, cursor: newText.trim() ? "pointer" : "default", fontFamily: "inherit" }}>Add</button>
+                      <button onPointerDown={e => { e.preventDefault(); if (e.pointerType !== 'mouse') addEntry(); }} onClick={addEntry} disabled={!newText.trim()} style={{ padding: "5px 12px", border: "none", borderRadius: 6, background: newText.trim() ? C.accent : C.border, color: "#fff", fontSize: 12, fontWeight: 600, cursor: newText.trim() ? "pointer" : "default", fontFamily: "inherit" }}>Add</button>
                     </div>
                   </div>
                 </div>
@@ -390,7 +390,7 @@ export function DailyJournalView({ team, onUpdateTeam }: Props) {
                     placeholder="Timer label…"
                     style={{ flex: 1, padding: "6px 10px", border: `1px solid ${C.border}`, borderRadius: 6, fontSize: 13, fontFamily: "inherit", background: C.surface, color: C.text, outline: "none" }}
                   />
-                  <button onPointerDown={e => e.preventDefault()} onClick={addTimer} disabled={!newTimerLabel.trim()} style={{ padding: "6px 12px", border: "none", borderRadius: 6, background: newTimerLabel.trim() ? C.accent : C.border, color: "#fff", fontSize: 12, fontWeight: 600, cursor: newTimerLabel.trim() ? "pointer" : "default", fontFamily: "inherit" }}>
+                  <button onPointerDown={e => { e.preventDefault(); if (e.pointerType !== 'mouse') addTimer(); }} onClick={addTimer} disabled={!newTimerLabel.trim()} style={{ padding: "6px 12px", border: "none", borderRadius: 6, background: newTimerLabel.trim() ? C.accent : C.border, color: "#fff", fontSize: 12, fontWeight: 600, cursor: newTimerLabel.trim() ? "pointer" : "default", fontFamily: "inherit" }}>
                     Add
                   </button>
                 </div>
